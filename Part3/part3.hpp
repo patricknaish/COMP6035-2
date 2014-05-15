@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <stdio.h>
+#include <climits>
 
 using namespace std;
 
@@ -14,6 +15,40 @@ public:
 	}
 };
 
+// Variadic template for finding a minimum value (passes through)
+template <int... Values> struct MIN {};
+
+// Variadic template for finding a minimum value recursively
+template <int Value, int... Values> struct MIN <Value, Values...> {
+	enum {
+		apply = Value < MIN<Values...>::apply ? Value : MIN<Values...>::apply
+	};
+};
+
+// Recursive base case for minimum values
+template <> struct MIN <> {
+	enum {
+		apply = INT_MAX
+	};
+};
+
+// Variadic template for finding a maximum value (passes through)
+template <int... Values> struct MAX{};
+
+// Variadic template for finding a maximum value recursively
+template <int Value, int... Values> struct MAX <Value, Values...> {
+	enum {
+		apply = Value > MAX<Values...>::apply ? Value : MAX<Values...>::apply
+	};
+};
+
+// Recursive base case for maximum values
+template <> struct MAX <> {
+	enum {
+		apply = INT_MIN
+	};
+};
+
 // Represents a raw value
 // VAL<1> = 1
 template <int i> class VAL {
@@ -21,11 +56,9 @@ public:
 	static inline int eval(int vals[]) {
 		return i;
 	};
-	static inline int lower() {
-		return i;
-	};
-	static inline int higher() {
-		return i;
+	enum {
+		lower = i,
+		higher = i
 	};
 };
 
@@ -42,11 +75,9 @@ public:
 		};
 		return vals[varIndex++];
 	};
-	static inline int lower() {
-		return b::lower;
-	};
-	static inline int higher() {
-		return b::higher;
+	enum {
+		lower = b::lower,
+		higher = b::higher
 	};
 };
 
@@ -57,16 +88,14 @@ public:
 		varIndex = 0;
 		int returnvalue = e::eval(vals);
 #ifdef PRINTBOUNDS
-		printf("Lower bound  : %d\n", e::lower());
-		printf("Higher bound : %d\n", e::higher());
+		printf("Lower bound  : %d\n", e::lower;
+		printf("Higher bound : %d\n", e::higher;
 #endif
 		return returnvalue;
 	};
-	static inline int lower() {
-		return e::lower();
-	};
-	static inline int higher() {
-		return e::higher();
+	enum {
+		lower = e::lower,
+		higher = e::higher
 	};
 };
 
@@ -87,11 +116,9 @@ public:
 	static inline int eval(int vals[]) {
 		return l::eval(vals) + r::eval(vals);
 	};
-	static inline int lower() {
-		return l::lower() + r::lower();
-	};
-	static inline int higher() {
-		return l::higher() + r::higher();
+	enum {
+		lower = l::lower + r::lower,
+		higher = l::higher + r::higher
 	};
 };
 
@@ -102,11 +129,9 @@ public:
 	static inline int eval(int vals[]) {
 		return l::eval(vals) - r::eval(vals);
 	};
-	static inline int lower() {
-		return l::lower() - r::lower();
-	};
-	static inline int higher() {
-		return l::higher() - r::higher();
+	enum {
+		lower = l::lower - r::lower,
+		higher = l::higher - r::higher
 	};
 };
 
@@ -117,11 +142,9 @@ public:
 	static inline int eval(int vals[]) {
 		return l::eval(vals) * r::eval(vals);
 	};
-	static inline int lower() {
-		return min(l::lower() * r::lower(), min(l::lower() * r::higher(), min(l::higher() * r::lower(), l::higher() * r::higher())));
-	};
-	static inline int higher() {
-		return max(l::lower() * r::lower(), max(l::lower() * r::higher(), max(l::higher() * r::lower(), l::higher() * r::higher())));
+	enum {
+		lower = MIN<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::apply,
+		higher = MAX<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::apply
 	};
 };
 
@@ -132,17 +155,8 @@ public:
 	static inline int eval(int vals[]) {
 		return l::eval(vals) / r::eval(vals);
 	};
-	static inline int lower() {
-		if (r::lower() < -1 && r::higher() > 0) {
-			return min(l::lower() / r::lower(), min(l::lower() / r::higher(), min(l::higher() / r::lower(), min(l::higher() / r::higher(), min(l::lower() / -1, min(l::lower() / 1, min(l::higher() / -1, l::higher() / 1)))))));
-		} else {
-			return min(l::lower() / r::lower(), min(l::lower() / r::higher(), min(l::higher() / r::lower(), l::higher() / r::higher())));
-		}
-	};
-	static inline int higher() {
-		if (r::lower() < -1 && r::higher() > 0) {
-			return max(l::lower() / r::lower(), max(l::lower() / r::higher(), max(l::higher() / r::lower(), max(l::higher() / r::higher(), max(l::lower() / -1, max(l::lower() / 1, max(l::higher() / -1, l::higher() / 1)))))));
-		}
-		return max(l::lower() / r::lower(), max(l::lower() / r::higher(), max(l::higher() / r::lower(), l::higher() / r::higher())));
+	enum {
+		lower = (r::lower < -1 && r::higher > 0) ? (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::apply : (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::apply,
+		higher = (r::lower < -1 && r::higher > 0) ? (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::apply : (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::apply
 	};
 };

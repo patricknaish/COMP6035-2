@@ -17,27 +17,37 @@ public:
 	}
 };
 
-template <int Value=INT_MAX, int... Values> struct MIN {
+// Variadic template for finding a minimum value (passes through)
+template <int... Values> struct MIN {};
+
+// Variadic template for finding a minimum value recursively
+template <int Value, int... Values> struct MIN <Value, Values...> {
 	enum {
-		RET = Value < MIN<Values...>::RET ? Value : MIN<Values...>::RET
+		apply = Value < MIN<Values...>::apply ? Value : MIN<Values...>::apply
 	};
 };
 
+// Recursive base case for minimum values
 template <> struct MIN <> {
 	enum {
-		RET = INT_MAX
+		apply = INT_MAX
 	};
 };
 
-template <int Value=INT_MIN, int... Values> struct MAX {
+// Variadic template for finding a maximum value (passes through)
+template <int... Values> struct MAX{};
+
+// Variadic template for finding a maximum value recursively
+template <int Value, int... Values> struct MAX <Value, Values...> {
 	enum {
-		RET = Value > MAX<Values...>::RET ? Value : MAX<Values...>::RET
+		apply = Value > MAX<Values...>::apply ? Value : MAX<Values...>::apply
 	};
 };
 
+// Recursive base case for maximum values
 template <> struct MAX <> {
 	enum {
-		RET = INT_MIN
+		apply = INT_MIN
 	};
 };
 
@@ -131,8 +141,8 @@ public:
 		return l::eval(x) * r::eval(x);
 	};
 	enum {
-		lower = MIN<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::RET,
-		higher = MAX<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::RET
+		lower = MIN<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::apply,
+		higher = MAX<l::lower * r::lower, l::lower * r::higher, l::higher * r::lower, l::higher * r::higher>::apply
 	};
 };
 
@@ -144,7 +154,7 @@ public:
 		return l::eval(x) / r::eval(x);
 	};
 	enum {
-		lower = (r::lower < -1 && r::higher > 0) ? (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::RET : (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::RET,
-		higher = (r::lower < -1 && r::higher > 0) ? (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::RET : (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::RET
+		lower = (r::lower < -1 && r::higher > 0) ? (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::apply : (int)MIN<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::apply,
+		higher = (r::lower < -1 && r::higher > 0) ? (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher, l::lower / -1, l::lower / 1, l::higher / -1, l::higher / 1>::apply : (int)MAX<l::lower / r::lower, l::lower / r::higher, l::higher / r::lower, l::higher / r::higher>::apply
 	};
 };

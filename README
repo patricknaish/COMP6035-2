@@ -4,3 +4,5 @@ Run "make buildall" to build all files without running.
 Run "make clean" to remove compiled files.
 
 If you do not have make installed, please compile the files with "g++ -std=c++11".
+
+Please note that echo commands in the makefile will not behave correctly in some implementations.
