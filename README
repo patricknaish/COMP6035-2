@@ -1,0 +1,6 @@
+Run "make" to build and run all parts.
+Run "make buildpart1" to build and run just part 1 (or 2, or 3).
+Run "make buildall" to build all files without running.
+Run "make clean" to remove compiled files.
+
+If you do not have make installed, please compile the files with "g++ -std=c++11".
